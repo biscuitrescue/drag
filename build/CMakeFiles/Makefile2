@@ -54,10 +54,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/cafo/lang/cpp/compiler
+CMAKE_SOURCE_DIR = /home/cafo/lang/cpp/drag
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/cafo/lang/cpp/compiler/build
+CMAKE_BINARY_DIR = /home/cafo/lang/cpp/drag/build
 
 #=============================================================================
 # Directory level rules for the build root directory
@@ -85,14 +85,14 @@ clean: CMakeFiles/drag.dir/clean
 CMakeFiles/drag.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/drag.dir/build.make CMakeFiles/drag.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/drag.dir/build.make CMakeFiles/drag.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/cafo/lang/cpp/compiler/build/CMakeFiles --progress-num=1,2 "Built target drag"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/cafo/lang/cpp/drag/build/CMakeFiles --progress-num=1,2 "Built target drag"
 .PHONY : CMakeFiles/drag.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/drag.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/cafo/lang/cpp/compiler/build/CMakeFiles 2
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cafo/lang/cpp/drag/build/CMakeFiles 2
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/drag.dir/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/cafo/lang/cpp/compiler/build/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/cafo/lang/cpp/drag/build/CMakeFiles 0
 .PHONY : CMakeFiles/drag.dir/rule
 
 # Convenience name for target.
@@ -102,7 +102,7 @@ drag: CMakeFiles/drag.dir/rule
 # codegen rule for target.
 CMakeFiles/drag.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/drag.dir/build.make CMakeFiles/drag.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/cafo/lang/cpp/compiler/build/CMakeFiles --progress-num=1,2 "Finished codegen for target drag"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/home/cafo/lang/cpp/drag/build/CMakeFiles --progress-num=1,2 "Finished codegen for target drag"
 .PHONY : CMakeFiles/drag.dir/codegen
 
 # clean rule for target.

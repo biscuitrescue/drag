@@ -68,6 +68,25 @@ std::vector<Token> tokenise(const std::string& str) {
   return token_array;
 }
 
+std::string make_asm(const std::vector<Token> &token_array) {
+  std::stringstream output;
+  // init global line and status for sstream
+  output << "global status";
+
+  for (int i = 0; i < token_array.size(); i++) {
+    if (token_array[i].type == TokenType::_return) {
+      if (token_array[i + 1].type == TokenType::int_lit) {
+        if (token_array[i + 2].type  == TokenType::semicol) {
+          output << "    rdx 60\n";
+          output << "    rdi" << token_array[i + 1].value.value() << "\n";
+          output << "    ";// terminate
+        }
+      }
+    } 
+  }
+  return "hell0";
+}
+
 int main(int argc, char* argv[]) {
   if (argc != 2) {
     std::cerr << "Need a source file" << std::endl;
@@ -83,7 +102,7 @@ int main(int argc, char* argv[]) {
     contents = content_stream.str();
   }
 
-  tokenise(contents);
+  std::vector<Token> token_array = tokenise(contents);
 
   return EXIT_SUCCESS;
 }
