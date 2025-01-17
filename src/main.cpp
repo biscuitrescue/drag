@@ -16,7 +16,7 @@ enum class TokenType {
 
 struct Token {
   TokenType type;
-  std:: optional<std::string> value;
+  std::optional<std::string> value;
 
 };
 
@@ -71,20 +71,21 @@ std::vector<Token> tokenise(const std::string& str) {
 std::string make_asm(const std::vector<Token> &token_array) {
   std::stringstream output;
   // init global line and status for sstream
-  output << "global status";
+  output << "global _start\n_start:\n";
 
   for (int i = 0; i < token_array.size(); i++) {
-    if (token_array[i].type == TokenType::_return) {
-      if (token_array[i + 1].type == TokenType::int_lit) {
-        if (token_array[i + 2].type  == TokenType::semicol) {
-          output << "    rdx 60\n";
-          output << "    rdi" << token_array[i + 1].value.value() << "\n";
-          output << "    ";// terminate
+    const Token& token = token_array.at(i);
+    if (token.type == TokenType::_return) {
+      if (i + 1 < token_array.size() && token_array.at(i + 1).type == TokenType::int_lit) {
+        if (i + 2 < token_array.size() && token_array.at(i + 2).type  == TokenType::semicol) {
+          output << "    mov rax, 60\n";
+          output << "    mov rdi, " << token_array.at(i + 1).value.value() << "\n";
+          output << "    syscall";// terminate
         }
       }
     } 
   }
-  return "hell0";
+  return output.str();
 }
 
 int main(int argc, char* argv[]) {
@@ -103,6 +104,16 @@ int main(int argc, char* argv[]) {
   }
 
   std::vector<Token> token_array = tokenise(contents);
+
+  // std::cout << make_asm(token_array) << std::endl;
+
+  {
+    std::ofstream file("./out.asm");
+    file << make_asm(token_array);
+  }
+
+  system("nasm -felf64 out.asm");
+  system("ld -o out out.o");
 
   return EXIT_SUCCESS;
 }
