@@ -50,7 +50,7 @@ std::vector<Token> tokenise(const std::string& str) {
     } else if (std::isdigit(c)) {
       buf.push_back(c);
       i++;
-      while(i < str.length() && std::isdigit(str.at(i))) { // Shouldnt be i????
+      while(i < str.length() && std::isdigit(str.at(i))) { // Shouldnt be i???? -> -> // was right
         c = str.at(i);
         buf.push_back(c);
         i++;
