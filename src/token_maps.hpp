@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cctype>
+#include <unordered_map>
 #include <cstdlib>
 #include <cwctype>
 #include <iostream>
@@ -12,13 +13,19 @@
 enum class TokenType {
   exit,
   int_lit,
-  semicol
+  semicol,
+  identifier,
+  _return,
 };
 
 struct Token {
   TokenType type;
   std::optional<std::string> value;
+};
 
+const std::unordered_map<std::string, TokenType> keyword_map = {
+  {"exit", TokenType::exit},
+  {"return", TokenType::_return},
 };
 
 class Tokeniser {
@@ -47,40 +54,41 @@ class Tokeniser {
       }
 
     inline std::vector<Token> tokenise() {
-      std::vector<Token> token_array;
 
+      std::vector<Token> token_array;
       std::string buf;
+
       while(peak().has_value()) {
         if (isalpha(peak().value())) {
           buf.push_back(consume());
           while (peak().has_value() && std::isalnum(peak().value())) {
             buf.push_back(consume());
           }
-          if (buf == "exit") { // try using unordered_maps instead
-            token_array.push_back({.type = TokenType::exit});
-            buf.clear();
-            continue;
+          auto it = keyword_map.find(buf);
+          if (it != keyword_map.end()) {
+            token_array.push_back({.type = it->second, .value = buf});
           } else {
-            std::cerr << "Unexpected identifier: " << buf << std::endl;
-            exit(EXIT_FAILURE);
+            token_array.push_back({.type = TokenType::identifier, .value = buf});
           }
+
+          buf.clear();
+          continue;
+
         } else if (std::iswspace(peak().value())) {
           consume();
           continue;
-        } else if (std::isdigit(peak().value())) {
+        } else if (peak().has_value()) {
           buf.push_back(consume());
           while(peak().has_value() && std::isdigit(peak().value())) {
             buf.push_back(consume());
           }
-          token_array.push_back({.type = TokenType::int_lit});
+          token_array.push_back({.type = TokenType::int_lit, .value = buf});
           buf.clear();
           continue;
         } else if (peak().value() == ';') {
-          token_array.push_back({.type = TokenType::semicol});
-          buf.clear();
-          continue;
+          token_array.push_back({.type = TokenType::semicol, .value = ";"});
         } else {
-          std::cerr << "Error tokenising" << std::endl;
+          std::cerr << "Unexpected identifier" << buf << std::endl;
           exit(EXIT_FAILURE);
         }
       } 
