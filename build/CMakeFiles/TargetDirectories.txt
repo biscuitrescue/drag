@@ -1,3 +1,0 @@
-/home/cafo/lang/cpp/drag/build/CMakeFiles/drag.dir
-/home/cafo/lang/cpp/drag/build/CMakeFiles/edit_cache.dir
-/home/cafo/lang/cpp/drag/build/CMakeFiles/rebuild_cache.dir
