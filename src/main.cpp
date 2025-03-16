@@ -1,4 +1,5 @@
 #include <fstream>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -7,6 +8,7 @@
 #include "./token_maps.hpp"
 // #include "./token_maps.hpp"
 
+
 std::string make_asm(const std::vector<Token> &token_array) { // err here
   std::stringstream output;
   // init global line and status for sstream
@@ -14,16 +16,50 @@ std::string make_asm(const std::vector<Token> &token_array) { // err here
 
   for (int i = 0; i < token_array.size(); i++) {
     const Token& token = token_array.at(i);
-    if (token.type == TokenType::exit) {
-      if (i + 1 < token_array.size() && token_array.at(i + 1).type == TokenType::int_lit) {
-        if (i + 2 < token_array.size() && token_array.at(i + 2).type  == TokenType::semicol) {
-          output << "    mov rax, 60\n";
-          output << "    mov rdi, " << token_array.at(i + 1).value.value() << "\n";
-          output << "    syscall";// terminate
+      if (token.type == TokenType::exit) {
+        if (i + 1 < token_array.size() && token_array.at(i + 1).type == TokenType::int_lit) {
+          if (i + 2 < token_array.size() && token_array.at(i + 2).type == TokenType::semicol) {
+            // std::cout << "Generating asm: " << token_array.at(i + 1).value.value() << std::endl;
+
+            output << "    mov rax, 60\n";
+            output << "    mov rdi, " << token_array.at(i + 1).value.value() << "\n";
+            output << "    syscall";// terminate
+            
+            i += 2;
+          } else {
+            std::cerr << "Error: Expected semicolon after integer literal in exit statement\n";
+            exit(EXIT_FAILURE);
+          }
+        } else {
+          std::cerr << "Error: Expected integer literal after exit\n";
+          exit(EXIT_FAILURE);
         }
       }
-    } 
   }
+  //         std::cout << "Exit Code: " << token_array.at(i + 1).value.value() << std::endl;
+  //
+  //         int semi_ind = -1;
+  //
+  //         for (int j = i + 1; j < token_array.size(); j++) {
+  //           if (token_array.at(j).type == TokenType::semicol) {
+  //             semi_ind = j;
+  //             break;
+  //           }
+  //         }
+  //         if (semi_ind != -1) {
+  //           output << "    mov rax, 60\n";
+  //           output << "    mov rdi, " << token_array.at(i + 1).value.value() << "\n";
+  //           output << "    syscall";// terminate
+  //         } else {
+  //           std::cerr << "Expected semicolon after exit statement" << std::endl;
+  //         }  
+  //       } else {
+  //         std::cerr << "Error: Expected int_lit after exit" << std::endl;
+  //       }
+  //     }
+  //   }
+  // }
+
 
   return output.str();
 }
