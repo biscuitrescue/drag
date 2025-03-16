@@ -9,7 +9,7 @@
 #include <vector>
 
 enum class TokenType {
-  _return,
+  exit,
   int_lit,
   semicol
 };
@@ -36,8 +36,8 @@ std::vector<Token> tokenise(const std::string& str) {
       }
       i--;
 
-      if (buf == "return") {
-        token_array.push_back({.type = TokenType::_return});
+      if (buf == "exit") {
+        token_array.push_back({.type = TokenType::exit});
         buf.clear();
         continue;
       } else {
@@ -76,7 +76,7 @@ std::string make_asm(const std::vector<Token> &token_array) {
 
   for (int i = 0; i < token_array.size(); i++) {
     const Token& token = token_array.at(i);
-    if (token.type == TokenType::_return) {
+    if (token.type == TokenType::exit) {
       if (i + 1 < token_array.size() && token_array.at(i + 1).type == TokenType::int_lit) {
         if (i + 2 < token_array.size() && token_array.at(i + 2).type  == TokenType::semicol) {
           output << "    mov rax, 60\n";
