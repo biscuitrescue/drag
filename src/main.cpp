@@ -6,10 +6,6 @@
 
 #include "./tokenisation.hpp"
 
-
-std::vector<Token> tokenise(const std::string& str) {
-}
-
 std::string make_asm(const std::vector<Token> &token_array) {
   std::stringstream output;
   // init global line and status for sstream
@@ -45,7 +41,8 @@ int main(int argc, char* argv[]) {
     contents = content_stream.str();
   }
 
-  std::vector<Token> token_array = tokenise(contents);
+  Tokeniser tokeniser(std::move(contents));
+  std::vector<Token> token_array = tokeniser.tokenise();
 
   // std::cout << make_asm(token_array) << std::endl;
 
