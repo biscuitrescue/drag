@@ -41,7 +41,8 @@ std::vector<Token> tokenise(const std::string& str) {
         buf.clear();
         continue;
       } else {
-        std::cerr << "Error ret" << std::endl;
+        // std::cerr << "Error ret" << buf << c << std::endl;
+        std::cerr << "Unexpected identifier: " << buf << std::endl;
         exit(EXIT_FAILURE);
       }
     } else if (std::iswspace(c)) {
