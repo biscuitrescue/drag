@@ -87,16 +87,7 @@ class Tokeniser {
           buf.clear();
           continue;
         }
-        // else if (peak().has_value()) {
-        //
-        //   buf.push_back(consume());
-        //   while(peak().has_value() && std::isdigit(peak().value())) {
-        //     buf.push_back(consume());
-        //   }
-        //   token_array.push_back({.type = TokenType::int_lit, .value = buf});
-        //   buf.clear();
-        //   continue;
-        // } 
+
         else if (peak().value() == ';') {
           consume();
           token_array.push_back({.type = TokenType::semicol, .value = ";"});
