@@ -35,30 +35,6 @@ std::string make_asm(const std::vector<Token> &token_array) { // err here
         }
       }
   }
-  //         std::cout << "Exit Code: " << token_array.at(i + 1).value.value() << std::endl;
-  //
-  //         int semi_ind = -1;
-  //
-  //         for (int j = i + 1; j < token_array.size(); j++) {
-  //           if (token_array.at(j).type == TokenType::semicol) {
-  //             semi_ind = j;
-  //             break;
-  //           }
-  //         }
-  //         if (semi_ind != -1) {
-  //           output << "    mov rax, 60\n";
-  //           output << "    mov rdi, " << token_array.at(i + 1).value.value() << "\n";
-  //           output << "    syscall";// terminate
-  //         } else {
-  //           std::cerr << "Expected semicolon after exit statement" << std::endl;
-  //         }  
-  //       } else {
-  //         std::cerr << "Error: Expected int_lit after exit" << std::endl;
-  //       }
-  //     }
-  //   }
-  // }
-
 
   return output.str();
 }
