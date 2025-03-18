@@ -8,9 +8,7 @@
 #include <vector>
 #include <iostream>
 
-#include "./token_maps.hpp"
 #include "./generation.hpp"
-#include "./parser.hpp"
 
 
 int main(int argc, char* argv[]) {
