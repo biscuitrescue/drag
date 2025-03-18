@@ -20,7 +20,7 @@ class Parser {
     size_t m_ind = 0;
 
     [[nodiscard]] inline std::optional<Token> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
-      if (m_ind + n > m_tokens.size()) {
+      if (m_ind + n >= m_tokens.size()) {
         return {};
       } 
       return m_tokens.at(m_ind + (n - 1));
