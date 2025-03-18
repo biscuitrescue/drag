@@ -31,7 +31,7 @@ const std::unordered_map<std::string, TokenType> keyword_map = {
 class Tokeniser {
   private:
 
-    [[nodiscard]] std::optional<char> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
+    [[nodiscard]] inline std::optional<char> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
       if (m_ind + n >= m_src.length()) {
         return {};
       } else {
@@ -39,7 +39,7 @@ class Tokeniser {
       }
     }
 
-    char consume() {
+    inline char consume() {
       return m_src.at(m_ind++);
     }
 
@@ -49,9 +49,7 @@ class Tokeniser {
   public:
 
     inline explicit Tokeniser(const std::string& src)
-      : m_src(std::move(src)) {
-
-      }
+      : m_src(std::move(src)) {}
 
     inline std::vector<Token> tokenise() {
 
