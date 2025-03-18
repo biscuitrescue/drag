@@ -32,7 +32,7 @@ int main(int argc, char* argv[]) {
   std::vector<Token> token_array = tokeniser.tokenise();
 
   Parser parser(std::move(token_array));
-  std::optional<node::Exit> tree = parser.parse();
+  std::optional<NodeExit> tree = parser.parse();
 
   if (!tree.has_value()) {
     std::cerr << "No exit statement" << std::endl;

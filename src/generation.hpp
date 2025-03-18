@@ -5,10 +5,10 @@
 
 class Generator {
   private:
-    const node::Exit m_root;
+    const NodeExit m_root;
 
   public:
-    inline Generator(node::Exit root)
+    inline Generator(NodeExit root)
       : m_root(std::move(root)) {}
 
     [[nodiscard]] std::string generate() const {

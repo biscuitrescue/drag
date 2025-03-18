@@ -1,25 +1,22 @@
 #pragma once
 
+#include <cstdlib>
+#include <vector>
 #include "token_maps.hpp"
 
-namespace node {
+struct NodeExpr { Token int_lit; };
 
-  struct Expr { 
-    Token int_lit;
-  };
+struct NodeExit {
+  NodeExpr expr;
+};
 
-  struct Exit {
-    Expr expr;
-  };
-}
 
 class Parser {
-
   private:
-    std::vector<Token> m_tokens;
+    const std::vector<Token> m_tokens;
     size_t m_ind = 0;
 
-    [[nodiscard]] inline std::optional<Token> peak(int n = 1) const {
+    [[nodiscard]] inline std::optional<Token> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
       if (m_ind + n >= m_tokens.size()) {
         return {};
       } else {
@@ -31,38 +28,42 @@ class Parser {
       return m_tokens.at(m_ind++);
     }
 
-  public: 
-    inline explicit Parser(std::vector<Token> token_array):
-      m_tokens(std::move(token_array)) {}
+  public:
+    inline explicit Parser(std::vector<Token> token_arr)
+      : m_tokens(std::move(token_arr)) {}
 
-// Expression Parser
-    std::optional<node::Expr> parse_expr() { 
-      if (peak().has_value() && peak().value().type == TokenType::int_lit) {
-        return node::Expr{.int_lit = consume()};
+    std::optional<NodeExpr> parse_expr() {
+      if (peak().has_value() && peak()->type == TokenType::int_lit) {
+        return NodeExpr{.int_lit = consume()};
       } else {
         return {};
       }
     }
 
-// Exit Parser
-    std::optional<node::Exit> parse() {
-      std::optional<node::Exit> node_exit;
+    std::optional<NodeExit> parse() {
+      std::optional<NodeExit> exit_node;
+
       while (peak().has_value()) {
         if (peak().value().type == TokenType::exit) {
           consume();
-          if (auto expr = parse_expr()) { // if optional has val -> true else false
-            node_exit = node::Exit{.expr = expr.value()};
+          if (auto node_expr = parse_expr()) {
+            exit_node = NodeExit{.expr = node_expr.value()};
           } else {
-            std::cerr << "invalid expr" << std::endl;
+            std::cerr << "Invalid expression 1" << std::endl;
             exit(EXIT_FAILURE);
           }
-          if (!peak().has_value() || peak().value().type != TokenType::semicol) {
-            std::cerr << "invalid expr" << std::endl;
+
+          if(peak().has_value() && peak()->type == TokenType::semicol) {
+            consume();
+          } else {
+            std::cerr << "semi col not found" << std::endl;
             exit(EXIT_FAILURE);
           }
+
         }
       }
+
       m_ind = 0;
-      return node_exit;
+      return exit_node;
     }
 };
