@@ -1,7 +1,7 @@
 # Drag
 - nothing worth looking here, just to learn.
 
-### Mind Map
+## Mind Map
 1. Tokenisation
 2. Parsing
 3. ASM Generation
