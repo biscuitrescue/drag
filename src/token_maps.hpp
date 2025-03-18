@@ -21,6 +21,15 @@ enum class TokenType {
 struct Token {
   TokenType type;
   std::optional<std::string> value;
+
+  std::string tokenTypeToString() const {
+    switch (this->type) {
+      case TokenType::semicol: return "Semicolon";
+      case TokenType::int_lit: return "Integer Literal";
+      case TokenType::exit: return "Exit";
+      default: return "Unknown";
+    }
+  }
 };
 
 const std::unordered_map<std::string, TokenType> keyword_map = {
@@ -32,7 +41,7 @@ class Tokeniser {
   private:
 
     [[nodiscard]] inline std::optional<char> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
-      if (m_ind + n >= m_src.length()) {
+      if (m_ind + n > m_src.length()) {
         return {};
       } else {
         return m_src.at(m_ind);
@@ -55,6 +64,7 @@ class Tokeniser {
 
       std::vector<Token> token_array;
       std::string buf;
+
 
       while(peak().has_value()) {
         if (isalpha(peak().value())) {
