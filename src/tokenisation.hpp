@@ -25,7 +25,7 @@ class Tokeniser {
   private:
 
     [[nodiscard]] std::optional<char> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
-      if (m_ind + n >= m_src.length()) {
+      if (m_ind + n > m_src.length()) {
         return {};
       } else {
         return m_src.at(m_ind);
