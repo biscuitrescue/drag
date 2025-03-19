@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdlib>
 #include <iostream>
 #include <vector>
@@ -19,11 +20,11 @@ class Parser {
     const std::vector<Token> m_tokens;
     size_t m_ind = 0;
 
-    [[nodiscard]] inline std::optional<Token> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
-      if (m_ind + n > m_tokens.size()) {
+    [[nodiscard]] inline std::optional<Token> peak(int ahead = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
+      if (m_ind + ahead > m_tokens.size()) {
         return {};
-      } 
-      return m_tokens.at(m_ind + (n - 1));
+      }
+      return m_tokens.at(m_ind + (ahead - 1));
     }
 
 
@@ -45,6 +46,7 @@ class Parser {
 
     std::optional<node::Exit> parse() {
       std::optional<node::Exit> exit_node;
+      size_t prev_ind = m_ind;
 
       while (peak().has_value()) {
         if (peak().value().type == TokenType::exit) {

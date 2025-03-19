@@ -22,6 +22,7 @@ struct Token {
   TokenType type;
   std::optional<std::string> value;
 
+  // For easier debugging 
   std::string tokenTypeToString() const {
     switch (this->type) {
       case TokenType::semicol: return "Semicolon";
