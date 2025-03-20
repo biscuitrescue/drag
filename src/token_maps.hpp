@@ -14,6 +14,8 @@ enum class TokenType {
   exit,
   int_lit,
   semicol,
+  open_paren,
+  close_paren,
   identifier,
   _return,
 };
@@ -28,6 +30,8 @@ struct Token {
       case TokenType::semicol: return "Semicolon";
       case TokenType::int_lit: return "Integer Literal";
       case TokenType::exit: return "Exit";
+      case TokenType::open_paren: return "(";
+      case TokenType::close_paren: return ")";
       default: return "Unknown";
     }
   }
@@ -41,11 +45,11 @@ const std::unordered_map<std::string, TokenType> keyword_map = {
 class Tokeniser {
   private:
 
-    [[nodiscard]] inline std::optional<char> peak(int n = 1) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
-      if (m_ind + n > m_src.length()) {
+    [[nodiscard]] inline std::optional<char> peak(int offset = 0) const { // nodiscard to warn if not using ret val because no reason not to use ret val from const function
+      if (m_ind + offset >= m_src.length()) {
         return {};
       } else {
-        return m_src.at(m_ind);
+        return m_src.at(m_ind + offset);
       }
     }
 
@@ -83,6 +87,14 @@ class Tokeniser {
           buf.clear();
           continue;
 
+        } else if (peak().value() == '(') {
+          consume();
+          token_array.push_back({.type = TokenType::open_paren});
+          continue;
+        } else if (peak().value() == ')') {
+          consume();
+          token_array.push_back({.type = TokenType::close_paren});
+          continue;
         } else if (std::iswspace(peak().value())) {
           consume();
           continue;
@@ -95,9 +107,7 @@ class Tokeniser {
 
           buf.clear();
           continue;
-        }
-
-        else if (peak().value() == ';') {
+        } else if (peak().value() == ';') {
           consume();
           token_array.push_back({.type = TokenType::semicol, .value = ";"});
           continue;
