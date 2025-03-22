@@ -5,15 +5,28 @@
 #include <iostream>
 #include <ostream>
 #include <vector>
+#include <variant>
 #include "token_maps.hpp"
 
 namespace  node {
-  struct Expr { Token int_lit; };
+
+  struct ExprIntLit { Token int_lit; };
+
+  struct ExprIdent{ Token ident; };
+
+  struct Expr { std::variant<ExprIdent, ExprIntLit> var; };
+
+  struct StmtExit { node::Expr expr; };
+
+  struct StmtLet {
+    Token ident;
+    node::Expr expr;
+  };
 
   struct Stmt { std::vector<Token> tokens;};
 
-  struct Exit {
-    node::Expr expr;
+  struct Prog {
+    std::vector<Stmt> stmts;
   };
 }
 
