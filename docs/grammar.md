@@ -9,9 +9,11 @@ $$
 \end{cases}
 
 
-\\ [\text{exit}] &\to exit([\text{expr}]);
-
-\\ [\text{expr}] &\to \text{int\_lit}
+\\ [\text{expr}] &\to 
+\begin{cases}
+    \text{int\_lit}\\
+    \text{ident}
+\end{cases}
 
 \end{align}
 $$
