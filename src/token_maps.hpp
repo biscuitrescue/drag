@@ -91,10 +91,6 @@ class Tokeniser {
           consume();
           token_array.push_back({.type = TokenType::open_paren});
           continue;
-        } else if (peak().value() == ')') {
-          consume();
-          token_array.push_back({.type = TokenType::close_paren});
-          continue;
         } else if (std::iswspace(peak().value())) {
           consume();
           continue;
@@ -106,6 +102,10 @@ class Tokeniser {
           token_array.push_back({.type = TokenType::int_lit, .value = buf});
 
           buf.clear();
+          continue;
+        } else if (peak().value() == ')') {
+          consume();
+          token_array.push_back({.type = TokenType::close_paren});
           continue;
         } else if (peak().value() == ';') {
           consume();
