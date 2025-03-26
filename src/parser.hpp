@@ -104,8 +104,23 @@ class Parser {
           exit(EXIT_FAILURE);
         }
         return node::Stmt{.var = stmt_exit};
+      } else if (peak().has_value() && peak()->type == TokenType::let && peak(1).has_value() && peak(1)->type == TokenType::ident && peak(2).has_value() && peak(2)->type == TokenType::assign) {
+        consume();
+        auto stmt_let = node::StmtLet{.ident = consume()};
+        consume();
+
+        if (auto expr = parse_expr()) {
+          stmt_let.expr = expr.value();
+        } else {
+          std::cerr << "Invalid expression in let stmt" << std::endl;
+        }
+
+        if (peak().has_value() && peak()->type == TokenType::semicol) {
+          consume();
+        } else {
+          std::cerr << "Expected ';' at end of statement let" << std::endl;
+        }
       }
-      return {};
     }
 
     // std::optional<node::Exit> parse() {

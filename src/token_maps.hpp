@@ -19,6 +19,7 @@ enum class TokenType {
   ident,
   _return,
   let,
+  assign,
 };
 
 struct Token {
@@ -34,6 +35,7 @@ struct Token {
       case TokenType::exit: return "Exit";
       case TokenType::open_paren: return "(";
       case TokenType::close_paren: return ")";
+      case TokenType::assign: return "=";
       default: return "Unknown Token";
     }
   }
@@ -99,13 +101,17 @@ class Tokeniser {
           continue;
         } else if (std::isdigit(peak().value())) {
           buf.push_back(consume());
+
           while (peak().has_value() && std::isdigit(peak().value())) {
             buf.push_back(consume());
           }
-          token_array.push_back({.type = TokenType::int_lit, .value = buf});
 
+          token_array.push_back({.type = TokenType::int_lit, .value = buf});
           buf.clear();
           continue;
+        } else if (peak().value() == '=') {
+          consume();
+          token_array.push_back({.type = TokenType::assign});
         } else if (peak().value() == ')') {
           consume();
           token_array.push_back({.type = TokenType::close_paren});
