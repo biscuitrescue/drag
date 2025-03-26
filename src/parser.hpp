@@ -92,7 +92,7 @@ class Parser {
         if (peak().has_value() && peak()->type == TokenType::close_paren) {
           consume();
         } else {
-          std::cerr << "Expected )" << std::endl;
+          std::cerr << "Expected ')'" << std::endl;
           exit(EXIT_FAILURE);
         }
 
@@ -100,7 +100,7 @@ class Parser {
         if (peak().has_value() && peak().value().type == TokenType::semicol) {
           consume();
         } else {
-          std::cerr << "semi col not found" << std::endl;
+          std::cerr << "Expected ';'" << std::endl;
           exit(EXIT_FAILURE);
         }
         return node::Stmt{.var = stmt_exit};
