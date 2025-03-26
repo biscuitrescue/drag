@@ -16,8 +16,9 @@ enum class TokenType {
   semicol,
   open_paren,
   close_paren,
-  identifier,
+  ident,
   _return,
+  let,
 };
 
 struct Token {
@@ -40,6 +41,7 @@ struct Token {
 const std::unordered_map<std::string, TokenType> keyword_map = {
   {"exit", TokenType::exit},
   {"return", TokenType::_return},
+  {"let", TokenType::let},
 };
 
 class Tokeniser {
@@ -81,7 +83,7 @@ class Tokeniser {
           if (it != keyword_map.end()) {
             token_array.push_back({.type = it->second, .value = buf});
           } else {
-            token_array.push_back({.type = TokenType::identifier, .value = buf});
+            token_array.push_back({.type = TokenType::ident, .value = buf});
           }
 
           buf.clear();

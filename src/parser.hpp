@@ -23,7 +23,7 @@ namespace  node {
     node::Expr expr;
   };
 
-  struct Stmt { std::vector<Token> tokens;};
+  struct Stmt { std::variant<StmtExit, StmtLet> var; };
 
   struct Prog {
     std::vector<Stmt> stmts;
@@ -54,10 +54,48 @@ class Parser {
 
     std::optional<node::Expr> parse_expr() {
       if (peak().has_value() && peak()->type == TokenType::int_lit) {
-        return node::Expr{.int_lit = consume()};
+        return node::Expr{.var = node::ExprIntLit{.int_lit = consume()}};
+      } else if (peak().has_value() && peak()->type == TokenType::ident) {
+        return node::Expr {.var = node::ExprIdent{.ident = consume()}};
       } else {
         return {};
       }
+    }
+
+    std::optional<node::Stmt> parse_stmt() {
+      if (peak().value().type == TokenType::exit && peak(1).has_value() && peak(1)->type == TokenType::open_paren) {
+
+        consume();
+        consume();
+
+        node::StmtExit stmt_exit;
+
+        // Evaluate expr
+        if (auto node_expr = parse_expr()) {
+          stmt_exit = node::StmtExit{.expr = node_expr.value()};
+        } else {
+          std::cerr << "Invalid expression" << std::endl;
+          exit(EXIT_FAILURE);
+        }
+
+        // check for )
+        if (peak().has_value() && peak()->type == TokenType::close_paren) {
+          consume();
+        } else {
+          std::cerr << "Expected )" << std::endl;
+          exit(EXIT_FAILURE);
+        }
+
+        // check for semicol
+        if (peak().has_value() && peak().value().type == TokenType::semicol) {
+          consume();
+        } else {
+          std::cerr << "semi col not found" << std::endl;
+          exit(EXIT_FAILURE);
+        }
+        return node::Stmt{.var = stmt_exit};
+      }
+      return {};
     }
 
     std::optional<node::Exit> parse() {
