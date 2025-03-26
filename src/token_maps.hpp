@@ -28,12 +28,13 @@ struct Token {
   // For easier debugging 
   std::string tokenTypeToString() const {
     switch (this->type) {
+      case TokenType::let: return "Let";
       case TokenType::semicol: return "Semicolon";
       case TokenType::int_lit: return "Integer Literal";
       case TokenType::exit: return "Exit";
       case TokenType::open_paren: return "(";
       case TokenType::close_paren: return ")";
-      default: return "Unknown";
+      default: return "Unknown Token";
     }
   }
 };
@@ -121,6 +122,5 @@ class Tokeniser {
 
       m_ind = 0;
       return token_array;
-
     };
 };
