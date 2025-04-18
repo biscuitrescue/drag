@@ -5,7 +5,7 @@ nothing worth looking here, just to learn.
 - [x] Tokenisation
 - [x] Parsing
 - [x] ASM Generation
-- [ ] Variables
+- [-] Variables
 
 ## TODO
 - [x] Hashmaps instead of if-else for identifiers
@@ -13,3 +13,4 @@ nothing worth looking here, just to learn.
 - [X] Err at make_asm after hashmap
 - [ ] Add shit other than exit functionality lmfao
 - [ ] Err when int_lit begins with 0 (08, etc)
+- [ ] parse_stmt() returns nothing yet
