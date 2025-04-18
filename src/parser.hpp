@@ -103,64 +103,27 @@ class Parser {
           std::cerr << "Expected ';'" << std::endl;
           exit(EXIT_FAILURE);
         }
+
         return node::Stmt{.var = stmt_exit};
+
       } else if (peak().has_value() && peak()->type == TokenType::let && peak(1).has_value() && peak(1)->type == TokenType::ident && peak(2).has_value() && peak(2)->type == TokenType::assign) {
         consume();
-        auto stmt_let = node::StmtLet{.ident = consume()};
+        auto stmt_let = node::StmtLet {.ident = consume()};
         consume();
 
         if (auto expr = parse_expr()) {
           stmt_let.expr = expr.value();
         } else {
           std::cerr << "Invalid expression in let stmt" << std::endl;
+          exit(EXIT_FAILURE);
         }
 
         if (peak().has_value() && peak()->type == TokenType::semicol) {
           consume();
         } else {
           std::cerr << "Expected ';' at end of statement let" << std::endl;
+          exit(EXIT_FAILURE);
         }
       }
     }
-
-    // std::optional<node::Exit> parse() {
-    //   std::optional<node::Exit> exit_node;
-    //   size_t prev_ind = m_ind;
-    //
-    //   while (peak().has_value()) {
-    //     if (peak().value().type == TokenType::exit && peak(1).has_value() &&
-    //         peak(1)->type == TokenType::open_paren) {
-    //
-    //       consume();
-    //       consume();
-    //
-    //       // Evaluate expr
-    //       if (auto node_expr = parse_expr()) {
-    //         exit_node = node::Exit{.expr = node_expr.value()};
-    //       } else {
-    //         std::cerr << "Invalid expression" << std::endl;
-    //         exit(EXIT_FAILURE);
-    //       }
-    //
-    //       // check for )
-    //       if (peak().has_value() && peak()->type == TokenType::close_paren) {
-    //         consume();
-    //       } else {
-    //         std::cerr << "Expected )" << std::endl;
-    //         exit(EXIT_FAILURE);
-    //       }
-    //
-    //       // check for semicol
-    //       if (peak().has_value() && peak().value().type == TokenType::semicol) {
-    //         consume();
-    //       } else {
-    //         std::cerr << "semi col not found" << std::endl;
-    //         exit(EXIT_FAILURE);
-    //       }
-    //     }
-    //   }
-    //
-    //   m_ind = 0;
-    //   return exit_node;
-    // }
 };
