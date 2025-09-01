@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
   std::stringstream content_stream;
   std::string contents;
   {
-    std::ifstream input (argv[1]); // alternative to fstream with std::ios::in
+    std::ifstream input (argv[1]);
     content_stream << input.rdbuf();
     contents = content_stream.str();
   }
