@@ -6,3 +6,5 @@ a.out
 /make
 /.cache
 /.ccls-cache
+/.direnv/
+/.envrc

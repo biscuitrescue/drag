@@ -22,6 +22,6 @@ class Generator {
       output << "    syscall";// terminate
       return output.str();
     }
-      
+
   private:
 };
