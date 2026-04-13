@@ -2,36 +2,36 @@ use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
 use inkwell::types::BasicMetadataTypeEnum;
-use inkwell::values::{FloatValue, FunctionValue};
+use inkwell::values::{BasicValueEnum, FloatValue, FunctionValue};
 use inkwell::FloatPredicate;
 use std::collections::HashMap;
 
-use crate::ast::{Decl, Expr, Func};
+use crate::ast::{Decl, Expr, Func, Type};
 
 pub struct Compiler<'a, 'ctx> {
     pub context: &'ctx Context,
     pub builder: &'a Builder<'ctx>,
     pub module: &'a Module<'ctx>,
     pub fn_value_opt: Option<FunctionValue<'ctx>>,
-    pub variables: HashMap<String, FloatValue<'ctx>>,
+    pub variables: HashMap<String, BasicValueEnum<'ctx>>,
 }
 
 impl<'a, 'ctx> Compiler<'a, 'ctx> {
-    pub fn compile_expr(&mut self, expr: &Expr) -> Result<FloatValue<'ctx>, &'static str> {
+    pub fn compile_expr(&mut self, expr: &Expr) -> Result<BasicValueEnum<'ctx>, &'static str> {
         match expr {
-            Expr::Number(val) => Ok(self.context.f64_type().const_float(*val)),
+            Expr::Number(val) => Ok(self.context.f64_type().const_float(*val).into()),
             Expr::Variable(name) => match self.variables.get(name) {
                 Some(var) => Ok(*var),
                 None => Err("Unknown variable name"),
             },
             Expr::Binary { op, left, right } => {
-                let lhs = self.compile_expr(left)?;
-                let rhs = self.compile_expr(right)?;
+                let lhs = self.compile_expr(left)?.into_float_value();
+                let rhs = self.compile_expr(right)?.into_float_value();
                 match op {
-                    '+' => Ok(self.builder.build_float_add(lhs, rhs, "addtmp").unwrap()),
-                    '-' => Ok(self.builder.build_float_sub(lhs, rhs, "subtmp").unwrap()),
-                    '*' => Ok(self.builder.build_float_mul(lhs, rhs, "multmp").unwrap()),
-                    '/' => Ok(self.builder.build_float_div(lhs, rhs, "divtmp").unwrap()),
+                    '+' => Ok(self.builder.build_float_add(lhs, rhs, "addtmp").unwrap().into()),
+                    '-' => Ok(self.builder.build_float_sub(lhs, rhs, "subtmp").unwrap().into()),
+                    '*' => Ok(self.builder.build_float_mul(lhs, rhs, "multmp").unwrap().into()),
+                    '/' => Ok(self.builder.build_float_div(lhs, rhs, "divtmp").unwrap().into()),
                     '<' => {
                         let cmp = self
                             .builder
@@ -40,7 +40,7 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                         Ok(self
                             .builder
                             .build_unsigned_int_to_float(cmp, self.context.f64_type(), "booltmp")
-                            .unwrap())
+                            .unwrap().into())
                     }
                     _ => Err("Invalid binary operator"),
                 }
@@ -64,7 +64,7 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                     .build_call(function, &compiled_args, "calltmp")
                     .unwrap();
                 match result.try_as_basic_value() {
-                    inkwell::values::ValueKind::Basic(val) => Ok(val.into_float_value()),
+                    inkwell::values::ValueKind::Basic(val) => Ok(val.into()),
                     _ => Err("Func call returned void"),
                 }
             }
@@ -72,19 +72,21 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
     }
 
     pub fn compile_decl(&self, proto: &Decl) -> Result<FunctionValue<'ctx>, &'static str> {
-        let f64_type = self.context.f64_type();
-        let args_types = std::iter::repeat(f64_type)
-            .take(proto.args.len())
-            .map(|f| f.into())
-            .collect::<Vec<BasicMetadataTypeEnum>>();
+        let args_types = proto.args.iter().map(|(_, t)| match t {
+            Type::F64 => self.context.f64_type().into(),
+        }).collect::<Vec<BasicMetadataTypeEnum>>();
         let args_types = args_types.as_slice();
 
-        let fn_type = self.context.f64_type().fn_type(args_types, false);
+        let fn_type = match proto.return_type {
+            Type::F64 => self.context.f64_type().fn_type(args_types, false),
+        };
         let fn_val = self.module.add_function(proto.name.as_str(), fn_type, None);
 
         // set arguments names
         for (i, arg) in fn_val.get_param_iter().enumerate() {
-            arg.into_float_value().set_name(proto.args[i].as_str());
+            if let inkwell::values::BasicValueEnum::FloatValue(fv) = arg {
+                fv.set_name(proto.args[i].0.as_str());
+            }
         }
 
         Ok(fn_val)
@@ -100,9 +102,9 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
 
         self.variables.reserve(function.decl.args.len());
         for (i, arg) in function_val.get_param_iter().enumerate() {
-            let arg_name = function.decl.args[i].as_str();
+            let arg_name = function.decl.args[i].0.as_str();
             self.variables
-                .insert(arg_name.to_string(), arg.into_float_value());
+                .insert(arg_name.to_string(), arg);
         }
 
         let body = self.compile_expr(&function.body)?;
@@ -111,7 +113,6 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
         if function_val.verify(true) {
             Ok(function_val)
         } else {
-            // Unsafe clean up
             unsafe {
                 function_val.delete();
             }

@@ -14,9 +14,15 @@ pub enum Expr {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub enum Type {
+    F64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Decl {
     pub name: String,
-    pub args: Vec<String>,
+    pub args: Vec<(String, Type)>,
+    pub return_type: Type,
 }
 
 #[derive(Debug, Clone, PartialEq)]

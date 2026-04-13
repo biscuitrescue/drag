@@ -1,7 +1,7 @@
 mod ast;
+mod codegen;
 mod lexer;
 mod parser;
-mod codegen;
 
 use clap::Parser;
 use inkwell::context::Context;
@@ -12,25 +12,37 @@ struct Arg {
     /// String to compile
     #[arg(short, long)]
     input: Option<String>,
+
+    /// File to compile
+    #[arg(short, long)]
+    file: Option<String>,
 }
 
 fn main() {
     let args = Arg::parse();
 
-    let code = if let Some(ref input) = args.input {
+    let code = if let Some(ref file_path) = args.file {
+        match std::fs::read_to_string(file_path) {
+            Ok(content) => content,
+            Err(e) => {
+                eprintln!("Failed to read file '{}': {}", file_path, e);
+                return;
+            }
+        }
+    } else if let Some(ref input) = args.input {
         input.clone()
     } else {
-        println!("Please provide input using --input");
+        println!("Please provide input string (-i) or file (-f)");
         return;
     };
-
-    println!("Compiling: {}", code);
 
     let lexer = lexer::Lexer::new(&code);
     let mut parser = parser::Parser::new(lexer);
 
-    let ast_opt = parser.parse_definition().or_else(|_| parser.parse_top_level_expr());
-    
+    let ast_opt = parser
+        .parse_definition()
+        .or_else(|_| parser.parse_top_level_expr());
+
     match ast_opt {
         Ok(ast) => {
             println!("Parsed AST: {:#?}", ast);
@@ -49,7 +61,7 @@ fn main() {
 
             match compiler.compile_fn(&ast) {
                 Ok(_) => {
-                    println!("\nLLVM IR Generated Successfully!");
+                    println!("IR Generated!");
                     println!("{}", module.print_to_string().to_string());
                 }
                 Err(e) => {

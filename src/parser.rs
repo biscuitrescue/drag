@@ -1,4 +1,4 @@
-use crate::ast::{Decl, Expr, Func};
+use crate::ast::{Decl, Expr, Func, Type};
 use crate::lexer::{Lexer, Token};
 
 pub struct Parser<'a> {
@@ -29,12 +29,12 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_paren_expr(&mut self) -> Result<Expr, String> {
-        self.advance(); // consume '('
+        self.advance();
         let expr = self.parse_expression()?;
         if self.current_token != Token::RParen {
             return Err("Expected ')'".to_string());
         }
-        self.advance(); // consume ')'
+        self.advance();
         Ok(expr)
     }
 
@@ -44,15 +44,13 @@ impl<'a> Parser<'a> {
         } else {
             return Err("Expected identifier".to_string());
         };
-        self.advance(); // consume identifier
+        self.advance();
 
         if self.current_token != Token::LParen {
-            // It's a variable
             return Ok(Expr::Variable(id_name));
         }
-
-        // It's a function call
-        self.advance(); // consume '('
+        // function call
+        self.advance();
         let mut args = Vec::new();
         if self.current_token != Token::RParen {
             loop {
@@ -66,7 +64,7 @@ impl<'a> Parser<'a> {
                 self.advance();
             }
         }
-        self.advance(); // consume ')'
+        self.advance();
 
         Ok(Expr::Call {
             callee: id_name,
@@ -113,7 +111,7 @@ impl<'a> Parser<'a> {
             } else {
                 return Err("Expected operator".to_string());
             };
-            self.advance(); // consume binop
+            self.advance();
 
             let mut rhs = self.parse_primary()?;
 
@@ -135,6 +133,19 @@ impl<'a> Parser<'a> {
         self.parse_bin_op_rhs(0, lhs)
     }
 
+    fn parse_type(&mut self) -> Result<Type, String> {
+        if let Token::Identifier(ref type_name) = self.current_token {
+            let typ = match type_name.as_str() {
+                "f64" => Type::F64,
+                _ => return Err(format!("Unknown type: {}", type_name)),
+            };
+            self.advance();
+            Ok(typ)
+        } else {
+            Err("Expected type identifier".to_string())
+        }
+    }
+
     pub fn parse_decl(&mut self) -> Result<Decl, String> {
         let name = if let Token::Identifier(ref n) = self.current_token {
             n.clone()
@@ -149,9 +160,29 @@ impl<'a> Parser<'a> {
         self.advance();
 
         let mut args = Vec::new();
-        while let Token::Identifier(ref arg) = self.current_token {
-            args.push(arg.clone());
-            self.advance();
+        if self.current_token != Token::RParen {
+            loop {
+                let arg_name = if let Token::Identifier(ref arg) = self.current_token {
+                    arg.clone()
+                } else {
+                    return Err("Expected argument name".to_string());
+                };
+                self.advance();
+
+                if self.current_token != Token::Colon {
+                    return Err("Expected ':' after argument name".to_string());
+                }
+                self.advance();
+
+                let arg_type = self.parse_type()?;
+                args.push((arg_name, arg_type));
+
+                if self.current_token == Token::Comma {
+                    self.advance();
+                } else {
+                    break;
+                }
+            }
         }
 
         if self.current_token != Token::RParen {
@@ -159,18 +190,37 @@ impl<'a> Parser<'a> {
         }
         self.advance();
 
-        Ok(Decl { name, args })
+        if self.current_token != Token::Arrow {
+            return Err("Expected '->' after prototype".to_string());
+        }
+        self.advance();
+
+        let return_type = self.parse_type()?;
+
+        Ok(Decl { name, args, return_type })
     }
 
     pub fn parse_definition(&mut self) -> Result<Func, String> {
-        self.advance(); // consume 'def'
+        self.advance();
         let proto = self.parse_decl()?;
+        
+        if self.current_token != Token::LBrace {
+            return Err("Expected '{' in function body".to_string());
+        }
+        self.advance();
+        
         let body = self.parse_expression()?;
+        
+        if self.current_token != Token::RBrace {
+            return Err("Expected '}' at end of function body".to_string());
+        }
+        self.advance();
+        
         Ok(Func { decl: proto, body })
     }
 
     pub fn parse_extern(&mut self) -> Result<Decl, String> {
-        self.advance(); // consume 'extern'
+        self.advance();
         self.parse_decl()
     }
 
@@ -179,6 +229,7 @@ impl<'a> Parser<'a> {
         let proto = Decl {
             name: "".to_string(), // anonymous function
             args: Vec::new(),
+            return_type: Type::F64,
         };
         Ok(Func { decl: proto, body })
     }

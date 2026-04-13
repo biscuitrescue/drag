@@ -1,12 +1,16 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
-    Def,
+    Fn,
     Extern,
     Identifier(String),
     Number(f64),
     Operator(char),
     LParen,
     RParen,
+    LBrace,
+    RBrace,
+    Colon,
+    Arrow,
     Comma,
     EOF,
 }
@@ -56,7 +60,7 @@ impl<'a> Lexer<'a> {
                     }
                 }
                 return match ident.as_str() {
-                    "def" => Token::Def,
+                    "fn" => Token::Fn,
                     "extern" => Token::Extern,
                     _ => Token::Identifier(ident),
                 };
@@ -75,20 +79,40 @@ impl<'a> Lexer<'a> {
                 return Token::Number(num_str.parse().unwrap_or(0.0));
             }
 
-            if c == '#' { // Comment
-                while let Some(c) = self.current_char {
-                    if c == '\n' || c == '\r' {
-                        break;
+            // Check for potential operators or comments
+            if c == '/' {
+                if let Some(next_c) = self.input.clone().next() {
+                    if next_c == '/' {
+                        // It's a comment
+                        self.advance(); // consume first '/'
+                        while let Some(c) = self.current_char {
+                            if c == '\n' || c == '\r' {
+                                break;
+                            }
+                            self.advance();
+                        }
+                        self.skip_whitespace();
+                        continue;
                     }
-                    self.advance();
                 }
-                self.skip_whitespace();
-                continue;
+            }
+
+            if c == '-' {
+                if let Some(next_c) = self.input.clone().next() {
+                    if next_c == '>' {
+                        self.advance(); // consume '-'
+                        self.advance(); // consume '>'
+                        return Token::Arrow;
+                    }
+                }
             }
 
             let token = match c {
                 '(' => Token::LParen,
                 ')' => Token::RParen,
+                '{' => Token::LBrace,
+                '}' => Token::RBrace,
+                ':' => Token::Colon,
                 ',' => Token::Comma,
                 _ => Token::Operator(c),
             };

@@ -1,0 +1,71 @@
+#+TITLE: GRAMMAR
+#+AUTHOR: biscuitrescue
+
+* Drag Language Grammar
+
+This document outlines the current lexical and syntactical grammar implemented in the =drag-rs= compiler.
+
+** Lexical Tokens
+
+- *Keywords*: =fn=, =extern=
+- *Types*: =f64=
+- *Identifiers*: =[a-zA-Z][a-zA-Z0-9]*=
+- *Numbers*: Float literals, e.g., =1.0=, =42=
+- *Operators*: =+=, =-=, =*=, =/=, =<=
+- *Punctuation*: =( , ) , { , } , : , -> , ,=
+- *Comments*: =//= (ignores characters until the end of the line)
+
+** Syntax Grammar (EBNF-like)
+
+#+BEGIN_SRC bnf
+<Program>      ::= <TopLevel>* EOF
+
+<TopLevel>     ::= <Definition>
+                 | <Extern>
+                 | <TopLevelExpr>
+
+<Definition>   ::= "fn" <Prototype> "{" <Expression> "}"
+
+<Extern>       ::= "extern" <Prototype>
+
+<Prototype>    ::= <Identifier> "(" <ArgList>? ")" "->" <Type>
+
+<ArgList>      ::= <Argument> ( "," <Argument> )*
+
+<Argument>     ::= <Identifier> ":" <Type>
+
+<Type>         ::= "f64"
+
+<TopLevelExpr> ::= <Expression>
+
+<Expression>   ::= <Primary> ( <BinOp> <Primary> )*
+
+<Primary>      ::= <Identifier>
+                 | <Number>
+                 | "(" <Expression> ")"
+                 | <CallExpr>
+
+<CallExpr>     ::= <Identifier> "(" <ExprList>? ")"
+
+<ExprList>     ::= <Expression> ( "," <Expression> )*
+
+<BinOp>        ::= "+" | "-" | "*" | "/" | "<"
+
+<Identifier>   ::= [a-zA-Z][a-zA-Z0-9]*
+<Number>       ::= [0-9]+ ("." [0-9]+)?
+#+END_SRC
+
+** Expression Precedence (Operator Binding)
+
+Binary operators are parsed using a precedence climb. Higher numbers indicate tighter binding:
+- =*=, =/= : 40
+- =+=, =-= : 20
+- =<= : 10
+
+** Example Usage
+
+#+BEGIN_SRC rust
+  fn add(a: f64, b: f64) -> f64 { 
+      a + b 
+  }
+#+END_SRC
