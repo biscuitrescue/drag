@@ -1,9 +1,12 @@
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
+use inkwell::passes::PassBuilderOptions;
+use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
 use inkwell::types::BasicMetadataTypeEnum;
-use inkwell::values::{BasicValueEnum, FloatValue, FunctionValue};
+use inkwell::values::{BasicValueEnum, FunctionValue};
 use inkwell::FloatPredicate;
+use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 
 use crate::ast::{Decl, Expr, Func, Type};
@@ -17,6 +20,47 @@ pub struct Compiler<'a, 'ctx> {
 }
 
 impl<'a, 'ctx> Compiler<'a, 'ctx> {
+    pub fn optimize_module(&self) -> Result<(), String> {
+        Target::initialize_all(&InitializationConfig::default());
+
+        let target_triple = TargetMachine::get_default_triple();
+        let target = Target::from_triple(&target_triple).map_err(|e| e.to_string())?;
+        let target_machine = target
+            .create_target_machine(
+                &target_triple,
+                "generic",
+                "",
+                OptimizationLevel::Default,
+                RelocMode::PIC,
+                CodeModel::Default,
+            )
+            .ok_or_else(|| "Failed to create target machine".to_string())?;
+
+        let passes = ["instcombine", "reassociate", "gvn", "adce", "simplifycfg"];
+        self.module
+            .run_passes(
+                &passes.join(","),
+                &target_machine,
+                PassBuilderOptions::create(),
+            )
+            .map_err(|e| e.to_string())?;
+        Ok(())
+    }
+
+    pub fn ensure_entrypoint(&self) {
+        if self.module.get_function("main").is_some() {
+            return;
+        }
+
+        let main_ty = self.context.i32_type().fn_type(&[], false);
+        let main_fn = self.module.add_function("main", main_ty, None);
+        let entry = self.context.append_basic_block(main_fn, "entry");
+        self.builder.position_at_end(entry);
+        self.builder
+            .build_return(Some(&self.context.i32_type().const_zero()))
+            .unwrap();
+    }
+
     pub fn compile_expr(&mut self, expr: &Expr) -> Result<BasicValueEnum<'ctx>, &'static str> {
         match expr {
             Expr::Number(val) => Ok(self.context.f64_type().const_float(*val).into()),

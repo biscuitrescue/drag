@@ -1,0 +1,64 @@
+#+TITLE: drag-rs
+#+DESCRIPTION: A lightweight compiler written in Rust that targets LLVM IR
+
+* Overview
+~drag-rs~ is a lightweight programming language compiler written in Rust. It parses source code and generates LLVM IR using the ~inkwell~ crate. Currently, it supports parsing simple strongly-typed function definitions, arithmetic operations, and external functions.
+
+* Features
+- **Lexer & Parser:** Hand-rolled recursive descent parser building a strongly-typed AST.
+- **LLVM CodeGen:** Translates the parsed AST into optimized LLVM IR.
+- **Strong Typing:** Predictable type semantics, currently utilizing ~f64~ as the primitive base type.
+- **Arithmetic Operations:** First-class support for ~+~, ~-~, ~*~, ~/~, and ~<~.
+- **Extern Signatures:** Ability to declare external functions for FFI (e.g., C math functions).
+- **Command Line Interface:** Easy testing with simple string-based inputs or file read support.
+
+* Syntax Example
+A standard function definition requires the ~fn~ keyword, explicitly typed arguments, a return type, and curly braces:
+
+#+BEGIN_SRC rust
+fn add_one(x: f64) -> f64 {
+    1 + x
+}
+#+END_SRC
+
+You can also declare external C functions to call from within your code:
+
+#+BEGIN_SRC rust
+extern sin(x: f64) -> f64
+#+END_SRC
+
+* Usage
+First, build the compiler using ~cargo~ (make sure you have the respective LLVM development packages installed on your system for ~inkwell~):
+
+#+BEGIN_SRC bash
+cargo build
+#+END_SRC
+
+** Compile via String
+Provide a quick snippet to generate IR. By default, the output is saved to ~output.ll~.
+
+#+BEGIN_SRC bash
+cargo run -- -i "fn test(x: f64) -> f64 { 1 + x }"
+#+END_SRC
+
+** Compile via File
+Pass a source file to be parsed and compiled. You can also specify a custom output path for the LLVM IR.
+
+#+BEGIN_SRC bash
+cargo run -- -f example.drag -o generated.ll
+#+END_SRC
+
+* Roadmap
+This language is an evolving technical playground for compiler structure. Upcoming milestones could include:
+- [ ] Control Flow (~if~ / ~else~, ~for~ / ~while~ loops)
+- [ ] Native executable creation from LLVM IR (object files and linking)
+- [ ] Variable assignment (~let~ / ~mut~)
+- [ ] Extended types (integers, booleans, strings) and type checking
+
+* TODO
+- [ ] Top-level expression execution (REPL-style evaluation for immediate feedback)
+- [ ] Add control flow support (~if~ / ~else~)
+- [ ] Add local variables and assignment (~let~, ~=~)
+- [ ] Parse multiple definitions per file and generate a callable entry ~main~
+- [ ] Add user-selectable optimization levels (~-O0~ / ~-O1~ / ~-O2~ / ~-O3~)
+- [ ] Add parser/codegen tests (including golden IR tests)

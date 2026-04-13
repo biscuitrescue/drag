@@ -201,6 +201,9 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_definition(&mut self) -> Result<Func, String> {
+        if self.current_token != Token::Fn {
+            return Err("Expected 'fn' keyword".to_string());
+        }
         self.advance();
         let proto = self.parse_decl()?;
         
@@ -220,6 +223,9 @@ impl<'a> Parser<'a> {
     }
 
     pub fn parse_extern(&mut self) -> Result<Decl, String> {
+        if self.current_token != Token::Extern {
+            return Err("Expected 'extern' keyword".to_string());
+        }
         self.advance();
         self.parse_decl()
     }

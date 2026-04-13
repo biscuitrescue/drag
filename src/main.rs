@@ -16,6 +16,10 @@ struct Arg {
     /// File to compile
     #[arg(short, long)]
     file: Option<String>,
+
+    /// Output file
+    #[arg(short, long, default_value = "output.ll")]
+    out: String,
 }
 
 fn main() {
@@ -61,8 +65,16 @@ fn main() {
 
             match compiler.compile_fn(&ast) {
                 Ok(_) => {
-                    println!("IR Generated!");
-                    println!("{}", module.print_to_string().to_string());
+                    compiler.ensure_entrypoint();
+                    if let Err(e) = compiler.optimize_module() {
+                        eprintln!("Failed to optimize LLVM IR: {}", e);
+                        return;
+                    }
+                    let ir_string = module.print_to_string().to_string();
+                    let out_path = args.out;
+                    if let Err(e) = std::fs::write(&out_path, ir_string) {
+                        eprintln!("Failed to write IR to file '{}': {}", out_path, e);
+                    }
                 }
                 Err(e) => {
                     eprintln!("Failed to generate LLVM IR: {}", e);
