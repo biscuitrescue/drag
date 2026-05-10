@@ -1,3 +1,5 @@
+use inkwell::FloatPredicate;
+use inkwell::OptimizationLevel;
 use inkwell::builder::Builder;
 use inkwell::context::Context;
 use inkwell::module::Module;
@@ -5,8 +7,6 @@ use inkwell::passes::PassBuilderOptions;
 use inkwell::targets::{CodeModel, InitializationConfig, RelocMode, Target, TargetMachine};
 use inkwell::types::BasicMetadataTypeEnum;
 use inkwell::values::{BasicValueEnum, FunctionValue};
-use inkwell::FloatPredicate;
-use inkwell::OptimizationLevel;
 use std::collections::HashMap;
 
 use crate::ast::{Decl, Expr, Func, Type};
@@ -72,10 +72,26 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                 let lhs = self.compile_expr(left)?.into_float_value();
                 let rhs = self.compile_expr(right)?.into_float_value();
                 match op {
-                    '+' => Ok(self.builder.build_float_add(lhs, rhs, "addtmp").unwrap().into()),
-                    '-' => Ok(self.builder.build_float_sub(lhs, rhs, "subtmp").unwrap().into()),
-                    '*' => Ok(self.builder.build_float_mul(lhs, rhs, "multmp").unwrap().into()),
-                    '/' => Ok(self.builder.build_float_div(lhs, rhs, "divtmp").unwrap().into()),
+                    '+' => Ok(self
+                        .builder
+                        .build_float_add(lhs, rhs, "addtmp")
+                        .unwrap()
+                        .into()),
+                    '-' => Ok(self
+                        .builder
+                        .build_float_sub(lhs, rhs, "subtmp")
+                        .unwrap()
+                        .into()),
+                    '*' => Ok(self
+                        .builder
+                        .build_float_mul(lhs, rhs, "multmp")
+                        .unwrap()
+                        .into()),
+                    '/' => Ok(self
+                        .builder
+                        .build_float_div(lhs, rhs, "divtmp")
+                        .unwrap()
+                        .into()),
                     '<' => {
                         let cmp = self
                             .builder
@@ -84,7 +100,8 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
                         Ok(self
                             .builder
                             .build_unsigned_int_to_float(cmp, self.context.f64_type(), "booltmp")
-                            .unwrap().into())
+                            .unwrap()
+                            .into())
                     }
                     _ => Err("Invalid binary operator"),
                 }
@@ -116,9 +133,13 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
     }
 
     pub fn compile_decl(&self, proto: &Decl) -> Result<FunctionValue<'ctx>, &'static str> {
-        let args_types = proto.args.iter().map(|(_, t)| match t {
-            Type::F64 => self.context.f64_type().into(),
-        }).collect::<Vec<BasicMetadataTypeEnum>>();
+        let args_types = proto
+            .args
+            .iter()
+            .map(|(_, t)| match t {
+                Type::F64 => self.context.f64_type().into(),
+            })
+            .collect::<Vec<BasicMetadataTypeEnum>>();
         let args_types = args_types.as_slice();
 
         let fn_type = match proto.return_type {
@@ -147,8 +168,7 @@ impl<'a, 'ctx> Compiler<'a, 'ctx> {
         self.variables.reserve(function.decl.args.len());
         for (i, arg) in function_val.get_param_iter().enumerate() {
             let arg_name = function.decl.args[i].0.as_str();
-            self.variables
-                .insert(arg_name.to_string(), arg);
+            self.variables.insert(arg_name.to_string(), arg);
         }
 
         let body = self.compile_expr(&function.body)?;

@@ -197,7 +197,11 @@ impl<'a> Parser<'a> {
 
         let return_type = self.parse_type()?;
 
-        Ok(Decl { name, args, return_type })
+        Ok(Decl {
+            name,
+            args,
+            return_type,
+        })
     }
 
     pub fn parse_definition(&mut self) -> Result<Func, String> {
@@ -206,19 +210,19 @@ impl<'a> Parser<'a> {
         }
         self.advance();
         let proto = self.parse_decl()?;
-        
+
         if self.current_token != Token::LBrace {
             return Err("Expected '{' in function body".to_string());
         }
         self.advance();
-        
+
         let body = self.parse_expression()?;
-        
+
         if self.current_token != Token::RBrace {
             return Err("Expected '}' at end of function body".to_string());
         }
         self.advance();
-        
+
         Ok(Func { decl: proto, body })
     }
 

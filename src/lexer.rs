@@ -46,7 +46,7 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
-        
+
         while let Some(c) = self.current_char {
             if c.is_alphabetic() {
                 // Read identifier or keyword
